@@ -56,6 +56,10 @@ export default class Server {
 
 
 		this.controller.registerRoutes(this.router);
+		this.userController.registerRoutes(this.router)
+		this.projectController.registerRoutes(this.router)
+
+
 		
 
 		this.router.get("/", (req: Request, res: Response) => {
