@@ -9,6 +9,7 @@ import SessionManager from "./auth/SessionManager";
 import Cookie from "./auth/Cookie";
 
 /**
+ * test
  * Options for creating a new Server instance.
  * @property host The hostname of the server.
  * @property port The port number of the server.
