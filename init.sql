@@ -12,12 +12,12 @@ CREATE TABLE projects (
     id SERIAL PRIMARY KEY, 
     name VARCHAR(100), 
     status project_status NOT NULL DEFAULT 'incomplete'
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS users;
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
-    password VARCHAR(100) NOT NULL,
-    project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE
+    password VARCHAR(100) NOT NULL
 );
