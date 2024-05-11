@@ -10,6 +10,7 @@ export interface ProjectProps {
 	id?: number;
     name: string;
 	status: "incomplete" | "complete";
+	userId: number;
 }
 
 export default class Project {
@@ -22,6 +23,7 @@ export default class Project {
 		const connection = await sql.reserve();
 
 		props.name = props.name;
+		props.userId = props.userId
 
 		console.log(sql(convertToCase(camelToSnake, props)));
 
