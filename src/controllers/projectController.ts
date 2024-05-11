@@ -435,25 +435,5 @@ export default class ProjectController {
 					template: "ErrorView",
 				});
 			}
-
-		} catch (error) {
-			console.error("Error while marking project as complete:", error);
-		}
-
-		try {
-			await project?.markComplete();
-		} catch (error) {
-			console.error("Error while marking project as complete:", error);
-		}
-
-		await res.send({
-			statusCode: StatusCode.OK,
-			message: "Project marked as complete!",
-			payload: { 
-				project: project?.props, 
-				isSession, 
-			},
-			redirect: `/projects/${id}`,
-		});
 	};
 }

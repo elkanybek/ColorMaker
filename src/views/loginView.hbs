@@ -1,0 +1,25 @@
+{{> Header }}
+
+<h1>Login</h1>
+
+<form method="POST" action="{{ path 'login' }}" id="login-form">
+	
+	<div id="error" style="color: black;">{{errorMessage}}</div>
+
+	<fieldset class="grid">
+		<label>
+			Name
+			<input type="text" name="name">
+		</label>
+	</fieldset>
+    <fieldset class="grid">
+		<label>
+			Password
+			<input type="text" name="password">
+		</label>
+	</fieldset>
+    
+	<input type="submit" value="Login" id="login-form-submit-button">
+</form>
+
+{{> Footer}}

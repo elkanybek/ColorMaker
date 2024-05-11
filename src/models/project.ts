@@ -17,7 +17,7 @@ const MODEL_VERSION_ID = 'dd9458324b4b45c2be1a7ba84d27cd04';
 export interface ProjectProps {
 	id?: number;
     name: string;
-	status: "incomplete" | "complete";
+	  status: "incomplete" | "complete";
     userId: number;
 }
 
@@ -37,6 +37,7 @@ export default class Project {
 		const connection = await sql.reserve();
 
 		props.name = props.name;
+		props.userId = props.userId
 
 		console.log(sql(convertToCase(camelToSnake, props)));
 
