@@ -7,6 +7,8 @@ import postgres from "postgres";
 import fs from "fs/promises";
 import SessionManager from "./auth/SessionManager";
 import Cookie from "./auth/Cookie";
+import userController from "./controllers/userController";
+import projectController from "./controllers/projectController";
 
 /**
  * test
@@ -32,6 +34,8 @@ export default class Server {
 	private sql: postgres.Sql;
 	private router: Router;
 	private controller: Controller;
+	private userController: userController;
+	private projectController: projectController;
 
 	/**
 	 * Initializes a new Server instance. The server is not started until the `start` method is called.
@@ -45,8 +49,14 @@ export default class Server {
 
 		this.router = new Router();
 		this.controller = new Controller(this.sql);
+		this.userController = new userController(this.sql)
+		this.projectController = new projectController(this.sql)
+
+
+
 
 		this.controller.registerRoutes(this.router);
+		
 
 		this.router.get("/", (req: Request, res: Response) => {
 			res.send({
