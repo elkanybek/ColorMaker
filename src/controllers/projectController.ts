@@ -7,6 +7,7 @@ import { Session } from "inspector";
 import SessionManager from "../auth/SessionManager";
 import Cookie from "../auth/Cookie";
 import View from "../views/View";
+import Project, { ProjectProps } from "../models/project";
 
 /**
  * Controller for handling Todo CRUD operations.
@@ -23,18 +24,18 @@ export default class ProjectController {
 	
 	registerRoutes(router: Router) {
 		router.get("/projects", this.getProjectList);
-		router.get("/todos/new", this.getNewTodoForm);
-		router.post("/todos", this.createTodo);
+		router.get("/projects/new", this.getNewProjectForm);
+		router.post("/projects", this.createProject);
 
 		// Any routes that include an `:id` parameter should be registered last.
-		router.get("/todos/:id/edit", this.getEditTodoForm);
-		router.get("/todos/:id", this.getTodo);
-		router.put("/todos/:id", this.updateTodo);
-		router.delete("/todos/:id", this.deleteTodo);
-		router.put("/todos/:id/complete", this.completeTodo);
+		router.get("/projects/:id/edit", this.getEditProjectForm);
+		router.get("/projects/:id", this.getProject);
+		router.put("/projects/:id", this.updateProject);
+		router.delete("/projects/:id", this.deleteProject);
+		router.put("/projects/:id/complete", this.completeProject);
 	}
 
-	getNewTodoForm = async (req: Request, res: Response) => {
+	getNewProjectForm = async (req: Request, res: Response) => {
 		const isSession = req.getSession().cookie.name == 'session_id' && 
 			req.getSession().cookie.value &&
 			req.getSession().data.userId;
@@ -48,20 +49,20 @@ export default class ProjectController {
 		} 
 		await res.send({
 			statusCode: StatusCode.OK,
-			message: "New todo form",
-			template: "NewFormView",
+			message: "New project todo form",
+			template: "NewProjectFormView",
 			payload: { 
-				title: "New Todo",
+				title: "New Project",
 				isSession,
 			},
 		});
 	};
 
-	getEditTodoForm = async (req: Request, res: Response) => {
+	getEditProjectForm = async (req: Request, res: Response) => {
 		const id = req.getId();
 		const userId = req.body.userId || 0;
 
-		let todo: Todo | null = null;
+		let project: Project | null = null;
 		const isSession = req.getSession().cookie.name == 'session_id' && 
 			req.getSession().cookie.value &&
 			req.getSession().data.userId;
@@ -75,37 +76,28 @@ export default class ProjectController {
 		} 
 		
 		try {
-			todo = await Todo.read(this.sql, id, userId);
+			project = await Project.read(this.sql, id);
 		} catch (error) {
-			const message = `Error while getting todo list: ${error}`;
+			const message = `Error while getting project list: ${error}`;
 			console.error(message);
 		}
 
 		await res.send({
 			statusCode: StatusCode.OK,
-			message: "Edit todo form",
+			message: "Edit project form",
 			template: "EditFormView",
 			payload: { 
-				todo: todo?.props, 
-				title: "Edit Todo",
+				project: project?.props, 
+				title: "Edit Project",
 				isSession,
 			},
 		});
 	};
 
-	/**
-	 * This method should be called when a GET request is made to /todos.
-	 * It should retrieve all todos from the database and send them as a response.
-	 *
-	 * @param req The request object.
-	 * @param res The response object.
-	 *
-	 * @example GET /todos
-	 */
 	getProjectList = async (req: Request, res: Response) => {
 		const id = req.getId();
 		
-		let todos: Todo[] = [];
+		let projects: Project[] = [];
 		let uId = req.session.data.userId;
 		
 		const userId = req.body.userId || 0;
@@ -113,7 +105,7 @@ export default class ProjectController {
 			req.getSession().cookie.value;
 
 		try {
-			todos = await Todo.readAll(this.sql, userId);
+			projects = await Project.readAll(this.sql, userId);
 			if (!isSession || !req.getSession().data.userId) {
 				return await res.send({
 					statusCode: StatusCode.Unauthorized,
@@ -122,43 +114,34 @@ export default class ProjectController {
 				});
 			} 	
 		} catch (error) {
-			const message = `Error while getting todo list: ${error}`;
+			const message = `Error while getting project list: ${error}`;
 			console.error(message);
 		}
 
-		const todoList = todos.map((todo) => {
+		const projectList = projects.map((project) => {
 			return {
-				...todo.props,
-				isComplete: todo.props.status === "complete",
+				...project.props,
+				isComplete: project.props.status === "complete",
 			};
 		});
 		
 		await res.send({
 			statusCode: StatusCode.OK,
-			message: "Todo list retrieved",
+			message: "Project list retrieved",
 			payload: {
-				title: "Todo List",
-				todos: todoList,
+				title: "Project List",
+				projects: projectList,
 				isSession,
 				id: { id: uId},
 			},
-			template: "ListView",
+			template: "ListProjectsView",
 		});
 	};
 
-	/**
-	 * This method should be called when a GET request is made to /todos/:id.
-	 * It should retrieve a single todo from the database and send it as a response.
-	 *
-	 * @param req The request object.
-	 * @param res The response object.
-	 *
-	 * @example GET /todos/1
-	 */
-	getTodo = async (req: Request, res: Response) => {
+	getProject = async (req: Request, res: Response) => {
 		const id = req.getId();
 
-		let todo: Todo | null = null;
+		let project: Project | null = null;
 
 		if(isNaN(id)){
 			return await res.send({
@@ -173,8 +156,8 @@ export default class ProjectController {
 
 
 		try {
-			todo = await Todo.read(this.sql, id, userId);
-			if(!todo){
+			project = await Project.read(this.sql, id);
+			if(!project){
 				return await res.send({
 					statusCode: StatusCode.NotFound,
 					message: "Not found",
@@ -191,7 +174,7 @@ export default class ProjectController {
 				});
 			}
 
-			if(req.getSession().data.userId != todo.props.userId){
+			if(req.getSession().data.userId != project.props.userId){
 				return await res.send({
 					statusCode: StatusCode.Forbidden,
 					message: "Forbidden",
@@ -202,34 +185,25 @@ export default class ProjectController {
 
 			
 		} catch (error) {
-			const message = `Error while getting todo: ${error}`;
+			const message = `Error while getting project: ${error}`;
 			console.error(message);
 		}
 
 		await res.send({
 			statusCode: StatusCode.OK,
-			message: "Todo retrieved",
-			template: "ShowView",
+			message: "Project retrieved",
+			template: "ShowProjectView",
 			payload: {
-				todo: todo?.props,
-				title: todo?.props.title,
-				isComplete: todo?.props.status === "complete",
+				project: project?.props,
+				name: project?.props.name,
+				isComplete: project?.props.status === "complete",
 				isSession,
 			},
 		});
 	};
 
-	/**
-	 * This method should be called when a POST request is made to /todos.
-	 * It should create a new todo in the database and send it as a response.
-	 *
-	 * @param req The request object.
-	 * @param res The response object.
-	 *
-	 * @example POST /todos { "title": "New Todo", "description": "A new todo" }
-	 */
-	createTodo = async (req: Request, res: Response) => {
-		let todo: Todo | null = null;
+	createProject = async (req: Request, res: Response) => {
+		let project: Project | null = null;
 
 		const isSession = req.getSession().cookie.name == 'session_id' && 
 			req.getSession().cookie.value &&
@@ -243,71 +217,52 @@ export default class ProjectController {
 			});
 		} 
 
-		let todoProps: TodoProps = {
-			title: req.body.title,
-			description: req.body.description,
+		let projectProps: ProjectProps = {
+			name: req.body.name,
 			status: "incomplete",
-			createdAt: createUTCDate(),
-			dueAt: req.body.dueAt || new Date(createUTCDate().getTime() + (1000 * 60 * 60 * 24 * 365)),
 			userId: parseInt(req.body.userId),
 		};
 
-		if (!todoProps.title || !todoProps.description) {
+		if (!projectProps.name) {
 			return await res.send({
 				statusCode: StatusCode.BadRequest,
-				message: "Request body must include title and description.",
+				message: "Request body must include name.",
 				payload: {
-					todoProps,
-					error: "Request body must include title and description.",
+					projectProps,
+					error: "Request body must include name.",
 				},
 				template: "ErrorView"
 			});
 		}
 	
 		try {
-			todo = await Todo.create(this.sql, todoProps, req.getSession().data.userId);
+			project = await Project.create(this.sql, projectProps);
 			await res.send({
 				statusCode: StatusCode.Created,
-				message: "Todo created successfully!",
+				message: "Project created successfully!",
 				payload: { 
-					todo: todo.props,
+					project: project.props,
 					isSession,
 				},
-				redirect: `/todos/${todo.props.id}`,
+				redirect: `/projects/${project.props.id}`,
 			});
 		} catch (error) {
-			console.error("Error while creating todo:", error);
+			console.error("Error while creating project:", error);
 		}
 	};
 	
 	
-
-	/**
-	 * This method should be called when a PUT request is made to /todos/:id.
-	 * It should update an existing todo in the database and send it as a response.
-	 *
-	 * @param req The request object.
-	 * @param res The response object.
-	 *
-	 * @example PUT /todos/1 { "title": "Updated title" }
-	 * @example PUT /todos/1 { "description": "Updated description" }
-	 * @example PUT /todos/1 { "title": "Updated title", "dueAt": "2022-12-31" }
-	 */
-	updateTodo = async (req: Request, res: Response) => {
+	updateProject = async (req: Request, res: Response) => {
 		const id = req.getId();
 		const userId = req.body.userId || 0;
 
-		const todoProps: Partial<TodoProps> = {};
+		const projectProps: Partial<ProjectProps> = {};
 
-		if (req.body.title) {
-			todoProps.title = req.body.title;
+		if (req.body.name) {
+			projectProps.name = req.body.name;
 		}
 
-		if (req.body.description) {
-			todoProps.description = req.body.description;
-		}
-
-		let todo: Todo | null = null;
+		let project: Project | null = null;
 
 		if(isNaN(id)){
 			return await res.send({
@@ -321,8 +276,8 @@ export default class ProjectController {
 			req.getSession().cookie.value;
 
 		try {
-			todo = await Todo.read(this.sql, id, userId);
-			if(!todo){
+			project = await Project.read(this.sql, id);
+			if(!project){
 				return await res.send({
 					statusCode: StatusCode.NotFound,
 					message: "Not found",
@@ -339,7 +294,7 @@ export default class ProjectController {
 				});
 			}
 			
-			if(req.getSession().data.userId != todo.props.userId){
+			if(req.getSession().data.userId != project.props.userId){
 				return await res.send({
 					statusCode: StatusCode.Forbidden,
 					message: "Forbidden",
@@ -348,40 +303,31 @@ export default class ProjectController {
 				});
 			}
 		} catch (error) {
-			console.error("Error while updating todo:", error);
+			console.error("Error while updating project:", error);
 		}
 
 		try {
-			await todo?.update(todoProps);
+			await project?.update(projectProps);
 		} catch (error) {
-			console.error("Error while updating todo:", error);
+			console.error("Error while updating project:", error);
 		}
 
 		await res.send({
 			statusCode: StatusCode.OK,
-			message: "Todo updated successfully!",
+			message: "Project updated successfully!",
 			payload: { 
-				todo: todo?.props,
+				project: project?.props,
 				isSession,
 			},
-			redirect: `/todos/${id}`,
+			redirect: `/projects/${id}`,
 		});
 	};
 
-	/**
-	 * This method should be called when a DELETE request is made to /todos/:id.
-	 * It should delete an existing todo from the database.
-	 *
-	 * @param req The request object.
-	 * @param res The response object.
-	 *
-	 * @example DELETE /todos/1
-	 */
-	deleteTodo = async (req: Request, res: Response) => {
+	deleteProject = async (req: Request, res: Response) => {
 		const id = req.getId();
 		const userId = req.body.userId || 0;
 
-		let todo: Todo | null = null;
+		let project: Project | null = null;
 
 		if(isNaN(id)){
 			return await res.send({
@@ -394,8 +340,8 @@ export default class ProjectController {
 			req.getSession().cookie.value;
 
 		try {
-			todo = await Todo.read(this.sql, id, userId);
-			if(!todo){
+			project = await Project.read(this.sql, id);
+			if(!project){
 				return await res.send({
 					statusCode: StatusCode.NotFound,
 					message: "Not found",
@@ -413,7 +359,7 @@ export default class ProjectController {
 				});
 			}
 			
-			if(req.getSession().data.userId != todo.props.userId){
+			if(req.getSession().data.userId != project.props.userId){
 				return await res.send({
 					statusCode: StatusCode.Forbidden,
 					message: "Forbidden",
@@ -422,40 +368,31 @@ export default class ProjectController {
 				});
 			}
 		} catch (error) {
-			console.error("Error while deleting todo:", error);
+			console.error("Error while deleting project:", error);
 		}
 
 		try {
-			await todo?.delete();
+			await project?.delete();
 		} catch (error) {
-			console.error("Error while deleting todo:", error);
+			console.error("Error while deleting project:", error);
 		}
 
 		await res.send({
 			statusCode: StatusCode.OK,
-			message: "Todo deleted successfully!",
+			message: "Project deleted successfully!",
 			payload: { 
-				todo: todo?.props, 
+				project: project?.props, 
 				isSession, 
 			},
-			redirect: "/todos",
+			redirect: "/projects",
 		});
 	};
 
-	/**
-	 * This method should be called when a PUT request is made to /todos/:id/complete.
-	 * It should mark an existing todo as complete in the database and send it as a response.
-	 *
-	 * @param req The request object.
-	 * @param res The response object.
-	 *
-	 * @example PUT /todos/1/complete
-	 */
-	completeTodo = async (req: Request, res: Response) => {
+	completeProject = async (req: Request, res: Response) => {
 		const id = req.getId();
 		const userId = req.body.userId || 0;
 
-		let todo: Todo | null = null;
+		let project: Project | null = null;
 
 		if(isNaN(id)){
 			return await res.send({
@@ -470,9 +407,9 @@ export default class ProjectController {
 			req.getSession().cookie.value;
 
 		try {
-			todo = await Todo.read(this.sql, id, userId);
+			project = await Project.read(this.sql, id);
 
-			if(!todo){
+			if(!project){
 				return await res.send({
 					statusCode: StatusCode.NotFound,
 					message: "Not found",
@@ -490,7 +427,7 @@ export default class ProjectController {
 				});
 			}
 			
-			if(req.getSession().data.userId != todo.props.userId){
+			if(req.getSession().data.userId != project.props.userId){
 				return await res.send({
 					statusCode: StatusCode.Forbidden,
 					message: "Forbidden",
@@ -500,23 +437,23 @@ export default class ProjectController {
 			}
 
 		} catch (error) {
-			console.error("Error while marking todo as complete:", error);
+			console.error("Error while marking project as complete:", error);
 		}
 
 		try {
-			await todo?.markComplete();
+			await project?.markComplete();
 		} catch (error) {
-			console.error("Error while marking todo as complete:", error);
+			console.error("Error while marking project as complete:", error);
 		}
 
 		await res.send({
 			statusCode: StatusCode.OK,
-			message: "Todo marked as complete!",
+			message: "Project marked as complete!",
 			payload: { 
-				todo: todo?.props, 
+				project: project?.props, 
 				isSession, 
 			},
-			redirect: `/todos/${id}`,
+			redirect: `/projects/${id}`,
 		});
 	};
 }

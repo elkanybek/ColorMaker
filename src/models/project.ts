@@ -10,6 +10,13 @@ export interface ProjectProps {
 	id?: number;
     name: string;
 	status: "incomplete" | "complete";
+    userId: number;
+}
+
+export class NotFoundError extends Error {
+    constructor() {
+        super("Group not found.");
+    }
 }
 
 export default class Project {
@@ -36,22 +43,25 @@ export default class Project {
 		return new Project(sql, convertToCase(snakeToCamel, row) as ProjectProps);
 	}
 
-	static async read(sql: postgres.Sql<any>, id: number) {
-		const connection = await sql.reserve();
+	static async read(sql: postgres.Sql<any>, id: number): Promise<Project> {
+        const project = await sql 
+        `
+        SELECT * FROM projects WHERE id=${id};
+        `
 
-		const [row] = await connection<ProjectProps[]>`
-			SELECT * FROM
-			projects WHERE id = ${id}
-		`;
+        if (!project)
+        {
+            throw new NotFoundError()
+        }
 
-		await connection.release();
+        let project_props: ProjectProps = {
+            name: project[0].name, 
+            status: project[0].status,
+            userId: project[0].userId,
+        }
 
-		if (!row) {
-			return null;
-		}
-
-		return new Project(sql, convertToCase(snakeToCamel, row) as ProjectProps);
-	}
+        return new Project(sql, project_props as ProjectProps);
+    }
 
 	static async readAll(
 		sql: postgres.Sql<any>,
