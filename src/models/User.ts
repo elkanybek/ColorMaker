@@ -11,7 +11,6 @@ export interface UserProps {
 	id?: number;
 	name: string;
 	password: string;
-    projectId: number;
 }
 
 export class DuplicateNameError extends Error {
@@ -56,7 +55,7 @@ export default class User {
 		return new User(sql, props)
 	}
 
-	static async read(sql: postgres.Sql<any>, id: number): Promise<Model> {
+	static async read(sql: postgres.Sql<any>, id: number): Promise<User> {
 		const user = await sql`
 			SELECT name, password FROM user WHERE id=${id};
 		`
@@ -67,7 +66,6 @@ export default class User {
 		}
 		
 		let props: UserProps = {
-            projectId: user[0].id,
 			name: user[0].name, 
 			password: user[0].password
 		}
@@ -75,13 +73,41 @@ export default class User {
 		return new User(sql, props);
 	}
 
-	static async readAll(sql: postgres.Sql<any>): Promise<Model[]> {
-		return [new Model(sql, {})];
-	}
+	// static async readAll(sql: postgres.Sql<any>): Promise<Model[]> {
+	// 	return [new Model(sql, {})];
+	// }
 
-	async update(updateProps: Partial<ModelProps>) {
+	async update(updateProps: Partial<UserProps>) {
+        //WE CANT UPDATE THE ID (those field never change).
+
+		//check if user wants to update the title
+		if (updateProps.name != undefined) {
+			let updatedUser = await this.sql `Update users Set name = ${updateProps.name} where id = ${this.props.id} returning name`
+			//make sure that the user exist and there is not mistake with the id
+			if (updatedUser[0].name != undefined){
+				this.props.name = updatedUser[0].name;
+			}
+		}
+
+		//check if user wants to update the password 
+		if (updateProps.password != undefined) {
+			let updatedUser = await this.sql `Update users Set password = ${updateProps.password} where id = ${this.props.id} returning password`
+			
+			//make sure that the toDo exist and there is not mistake with the id
+			if (updatedUser[0].password != undefined){
+				this.props.password = updatedUser[0].password;
+			}
+		}
 	}
 
 	async delete() {
+        const connection = await this.sql.reserve();
+
+		const result = await connection`
+			DELETE FROM users
+			WHERE id = ${this.props.id}
+		`;
+
+		await connection.release();
 	}
 }
