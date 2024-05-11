@@ -406,34 +406,33 @@ export default class ProjectController {
 		const isSession = req.getSession().cookie.name == 'session_id' && 
 			req.getSession().cookie.value;
 
-		try {
-			project = await Project.read(this.sql, id);
+		project = await Project.read(this.sql, id);
 
-			if(!project){
-				return await res.send({
-					statusCode: StatusCode.NotFound,
-					message: "Not found",
-					payload: {error: "Not found",},
-					template: "ErrorView",
-				});
-			}
+		if(!project){
+			return await res.send({
+				statusCode: StatusCode.NotFound,
+				message: "Not found",
+				payload: {error: "Not found",},
+				template: "ErrorView",
+			});
+		}
 
-			if (!isSession || !req.getSession().data.userId) {
-				return await res.send({
-					statusCode: StatusCode.Unauthorized,
-					message: "Unauthorized",
-					payload: {error: "Unauthorized",},
-					template: "ErrorView",
-				});
-			}
-			
-			if(req.getSession().data.userId != project.props.userId){
-				return await res.send({
-					statusCode: StatusCode.Forbidden,
-					message: "Forbidden",
-					payload: {error: "Forbidden",},
-					template: "ErrorView",
-				});
-			}
-	};
+		if (!isSession || !req.getSession().data.userId) {
+			return await res.send({
+				statusCode: StatusCode.Unauthorized,
+				message: "Unauthorized",
+				payload: {error: "Unauthorized",},
+				template: "ErrorView",
+			});
+		}
+		
+		if(req.getSession().data.userId != project.props.userId){
+			return await res.send({
+				statusCode: StatusCode.Forbidden,
+				message: "Forbidden",
+				payload: {error: "Forbidden",},
+				template: "ErrorView",
+			});
+		}
+	}
 }
