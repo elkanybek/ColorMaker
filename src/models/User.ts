@@ -73,6 +73,30 @@ export default class User {
 		return new User(sql, props);
 	}
 
+    static async login(
+		sql: postgres.Sql<any>,
+		name: string,
+		password: string,
+	): Promise<User> {
+
+		const check = await sql `
+			SELECT name, password, userId FROM users WHERE name=${name} AND password=${password};
+		`;
+		
+		if(check.count == 1){
+
+			let user_props: UserProps = {
+				name: name,
+				password: password,
+				id: check[0].id
+			}
+
+			return new User(sql, user_props)
+		}
+
+		throw new InvalidCredentialsError()
+	}
+
 	// static async readAll(sql: postgres.Sql<any>): Promise<Model[]> {
 	// 	return [new Model(sql, {})];
 	// }
