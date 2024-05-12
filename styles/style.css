@@ -159,3 +159,211 @@ ol li {
 #new-project-btn {
     margin: 2%;
 }
+
+@keyframes glowing-turquoise {
+    0% {
+        box-shadow: 0 0 10px rgba(64, 224, 208, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(64, 224, 208, 0.9);
+    }
+    100% {
+        box-shadow: 0 0 10px rgba(64, 224, 208, 0.7);
+    }
+}
+
+@keyframes glowing-navy {
+    0% {
+        box-shadow: 0 0 10px rgba(0, 0, 128, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(0, 0, 128, 0.9);
+    }
+    100% {
+        box-shadow: 0 0 10px rgba(0, 0, 128, 0.7);
+    }
+}
+
+@keyframes slide-container1 {
+    0% {
+        transform: translateX(400%); /* Start position (far right) */
+    }
+    100% {
+        transform: translateX(calc(-100% * 3)); /* End position (move images to the left by 3 times their width) */
+    }
+}
+@keyframes slide-container2 {
+    0% {
+        transform: translateX(800%); /* Start position (far right) */
+    }
+    100% {
+        transform: translateX(calc(-100% * 6)); /* End position (move images to the left by 3 times their width) */
+    }
+}
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px); /* Optional: Add a slight vertical translation */
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.Header {
+    display: flex; /* Use flexbox for layout */
+    align-items: center; /* Center items vertically */
+    padding: 10px; /* Add some padding for spacing */
+    background-color: lightsteelblue; /* Set background color */
+} 
+
+.Header img {
+    max-width: 80px;
+}
+#Logo{
+    margin-right: 100px;
+    margin-left: 30px;
+}
+.rightlinks{
+    margin-left: auto;
+    margin-right: 2em ;
+
+}
+button {
+    padding: 10px 20px; /* Add padding inside the buttons */
+    margin-right: 10px; /* Add margin to separate buttons */
+    font-size: 16px; /* Set font size */
+    color: grey; /* Set text color */
+    border: none; /* Remove border */
+    border-radius: 5px; /* Add border radius for rounded corners */
+    cursor: pointer; /* Set cursor to pointer on hover */
+}
+
+button:hover {
+    background-color: darkgray; /* Change background color on hover */
+}
+.image-container {
+    display: flex; /* Use flexbox to ensure images stay in a row */
+    overflow: hidden; /* Hide overflow to prevent images from showing outside the container */
+}
+#container1 img {
+    flex: 0 0 auto; /* Maintain the original size of the images */
+    margin-right: 20px; /* Add spacing between images */
+    animation: slide-container1 10.2s linear infinite; /* Apply the slide-container1 animation */
+}
+#container2 img {
+    margin-right: 20px;
+    max-width: 200px;
+    animation-iteration-count: infinite;
+    animation: slide-container2 8s linear infinite; /* Slower animation for container 2 */
+}
+
+
+.image-container img{
+    margin-top: 50px;
+    display: inline-block;
+    animation: slide 10s linear infinite;
+    height: 190px;
+    width: 400px;
+    border-radius: 10px; /* Add rounded corners */
+    
+}
+
+.MidPage {
+   color: white;
+    margin-bottom: 7em;
+    text-align: center;
+    margin-top: 50px; /* Adjust margin-top to position the text vertically */
+}
+
+.MidPage h1 {
+    
+    font-size: 46px;
+    /* Add more styles as needed */
+}
+.MidPage p{
+    font-size: 20px;
+}
+#GetStarted{
+    
+    margin: 20px;
+    background-color: rgb(255, 255, 255); /* Set text color */
+    padding: 10px 20px; /* Add padding inside the buttons */
+    margin-right: 10px; /* Add margin to separate buttons */
+    font-size: 16px; /* Set font size */
+    color: rgb(3, 3, 15); /* Set text color */
+    border: none; /* Remove border */
+    border-radius: 5px; /* Add border radius for rounded corners */
+    cursor: pointer; /* Set cursor to pointer on hover */
+    transition: letter-spacing 0.3s ease;
+}
+#GetStarted:hover{
+    letter-spacing: 0.08em;
+}
+.slideup {
+    opacity: 0;
+    animation: fadeIn 1s forwards; /* Use forwards to keep the final state of the animation */
+}
+
+
+.bottom{
+    font-family: 'Roboto', sans-serif; /* Use Roboto font with a fallback to sans-serif */
+    color: white;
+    justify-content: center;
+}
+.bottom h1{
+    text-align: center;
+    margin-bottom: 2em;
+}
+.photo-row {
+    display: flex; /* Use flexbox for layout */
+}
+
+.photo {
+    flex: 1; /* Each photo takes up an equal amount of space */
+    margin: 0 10px; /* Add some margin between photos */
+    text-align: center; /* Center-align the content */
+}
+.photo img {
+    max-width: 300px;
+    max-height: 300px;
+    border-radius: 10px;
+}
+
+.caption {
+    font-weight: bold;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    margin-top: 5px; /* Add a small margin above the caption */
+    font-style: italic; /* Optionally, make the caption italic */
+}
+.final{
+    text-align: center;
+    margin-top: 5em;
+    color: white;
+
+}
+.final h1{
+    margin-bottom: 3em;
+}
+.final button{
+    padding:20px
+}
+
+#signup {
+    color: white;
+    background-color: rgb(33, 54, 212);
+    animation: glowing-navy 1.5s infinite;
+    border-color: #40e0d0; /* Turquoise border color */
+}
+
+#learnmore {
+    color: white;
+    background-color: rgb(44, 107, 195);
+    animation: glowing-turquoise 1.5s infinite;
+    border-color: #40e0d0; /* Turquoise border color */
+}
+
+nav{
+    background-color: lightcyan;
+}
