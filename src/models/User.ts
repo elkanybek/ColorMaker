@@ -9,13 +9,13 @@ import internal from "stream";
 
 export interface UserProps {
 	id?: number;
-	name: string;
+	username: string;
 	password: string;
 }
 
 export class DuplicateNameError extends Error {
 	constructor() {
-		super("User with this name already exists.");
+		super("User with this username already exists.");
 	}
 }
 
@@ -38,7 +38,7 @@ export default class User {
 		const nowTime = new Date()
 
 		const check = await connection<UserProps[]>`
-			SELECT name FROM users Where name = ${props.name};
+			SELECT username FROM users Where username = ${props.username};
 		`;
 		if(check.count != 0){
 			throw new DuplicateNameError()
@@ -46,7 +46,7 @@ export default class User {
 
 		const [row] = await connection<UserProps[]>`
 			INSERT INTO user
-				(name, password) VALUES (${props.name},${props.password})
+				(username, password) VALUES (${props.username},${props.password})
 			RETURNING *;
 		`;
 
@@ -57,7 +57,7 @@ export default class User {
 
 	static async read(sql: postgres.Sql<any>, id: number): Promise<User> {
 		const user = await sql`
-			SELECT name, password FROM user WHERE id=${id};
+			SELECT username, password FROM user WHERE id=${id};
 		`
 		
 		if (!user)
@@ -66,7 +66,7 @@ export default class User {
 		}
 		
 		let props: UserProps = {
-			name: user[0].name, 
+			username: user[0].username, 
 			password: user[0].password
 		}
 
@@ -75,18 +75,18 @@ export default class User {
 
     static async login(
 		sql: postgres.Sql<any>,
-		name: string,
+		username: string,
 		password: string,
 	): Promise<User> {
 
 		const check = await sql `
-			SELECT name, password, userId FROM users WHERE name=${name} AND password=${password};
+			SELECT name, password, userId FROM users WHERE name=${username} AND password=${password};
 		`;
 		
 		if(check.count == 1){
 
 			let user_props: UserProps = {
-				name: name,
+				username: username,
 				password: password,
 				id: check[0].id
 			}
@@ -105,11 +105,11 @@ export default class User {
         //WE CANT UPDATE THE ID (those field never change).
 
 		//check if user wants to update the title
-		if (updateProps.name != undefined) {
-			let updatedUser = await this.sql `Update users Set name = ${updateProps.name} where id = ${this.props.id} returning name`
+		if (updateProps.username != undefined) {
+			let updatedUser = await this.sql `Update users Set username = ${updateProps.username} where id = ${this.props.id} returning username`
 			//make sure that the user exist and there is not mistake with the id
-			if (updatedUser[0].name != undefined){
-				this.props.name = updatedUser[0].name;
+			if (updatedUser[0].username != undefined){
+				this.props.username = updatedUser[0].username;
 			}
 		}
 

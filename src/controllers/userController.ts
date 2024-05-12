@@ -40,7 +40,7 @@ export default class PostController {
 				statusCode: StatusCode.BadRequest,
 				message: "Invalid credential",
 				template: "registerView",
-				payload: { errorMessage: "Name is required."},
+				payload: { errorMessage: "Username is required."},
 			});
 			return
 		}
@@ -72,10 +72,10 @@ export default class PostController {
 
     createUser = async (req: Request, res: Response) => {
 
-        if(req.body.name == "" || req.body.name == null){
+        if(req.body.username == "" || req.body.username == null){
 			await res.send({
 				statusCode: StatusCode.BadRequest,
-				message: "Missing name.",
+				message: "Missing username.",
 				redirect: `/register?error=missing_name`
 			});
 		}
@@ -95,7 +95,7 @@ export default class PostController {
 		}
 		else{
 			let userprops: UserProps = {
-				name: req.body.email,
+				username: req.body.email,
 				password: req.body.password
 			}
 
@@ -108,7 +108,7 @@ export default class PostController {
 				//if the user has entered an email and password the only error left is the duplicate one!
 				await res.send({
 					statusCode: StatusCode.BadRequest,
-					message: "User with this name already exists.",
+					message: "User with this username already exists.",
 					redirect: `/register?error=creation_error`
 				});
 				return
@@ -128,7 +128,7 @@ export default class PostController {
 				statusCode: StatusCode.BadRequest,
 				message: "Invalid credential",
 				template: "loginView",
-				payload: { errorMessage: "Name is required."},
+				payload: { errorMessage: "Username is required."},
 			});
 			return
 		}
@@ -160,10 +160,10 @@ export default class PostController {
 
     loginUser = async (req: Request, res: Response) => {
 
-        if(req.body.name == "" || req.body.name == null){
+        if(req.body.username == "" || req.body.username == null){
 			await res.send({
 				statusCode: StatusCode.BadRequest,
-				message: "Missing name.",
+				message: "Missing username.",
 				redirect: `/login?error=missing_name`
 			});
 		}
@@ -177,13 +177,13 @@ export default class PostController {
 		else{
 
 			let userprops: UserProps = {
-				name: req.body.name,
+				username: req.body.username,
 				password: req.body.password
 			}
 
 			
 			try{
-				let myUser = await User.login(this.sql, userprops.name,userprops.password)
+				let myUser = await User.login(this.sql, userprops.username,userprops.password)
                 const userId: Cookie = new Cookie("user_id", `${myUser.props.id}`)
                 res.setCookie(userId)
 			}catch (error){
