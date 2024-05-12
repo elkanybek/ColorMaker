@@ -1,0 +1,27 @@
+{{> Header }}
+
+<h1>Edit Project</h1>
+
+<form action="{{path 'projects'}}/{{ project.id }}" method="POST" id="edit-project-form">
+	<input type="hidden" name="method" value="PUT">
+	<fieldset class="grid">
+		<label>
+			Name
+			<input type="text" name="name" placeholder="Enter new name" id="name" value="{{project.name}}">
+		</label>
+	</fieldset>
+	<textarea name="description" placeholder="Enter Description" id="description">{{todo.description}}</textarea>
+	<input type="submit" value="Edit" id="edit-todo-form-submit-button">
+</form>
+
+<form id="complete-project-form" method="POST" action="/projects/{{ project.id }}/complete">
+    <input type="hidden" name="method" value="PUT">
+    <button>Complete</button>
+</form>
+
+<form id="delete-project-form" method="POST" action="/projects/{{ todo.id }}">
+    <input type="hidden" name="method" value="DELETE"> 
+    <button>Delete</button>
+</form>
+
+{{> Footer }}
