@@ -17,8 +17,9 @@ const MODEL_VERSION_ID = 'dd9458324b4b45c2be1a7ba84d27cd04';
 export interface ProjectProps {
 	id?: number;
     name: string;
-	  status: "incomplete" | "complete";
+	status: "incomplete" | "complete";
     userId: number;
+	url: string;
 }
 
 export class NotFoundError extends Error {
@@ -55,24 +56,15 @@ export default class Project {
 		// getting the connection
 		const connection = await sql.reserve();	
 
-		const nowTime = createUTCDate(); //new Date()
-
-		const check = await connection<ProjectProps[]>`
-			SELECT name FROM projects WHERE name = ${props.name};
-		`;
-		if(check.count != 0){
-			throw new DuplicateNameError()
-		}
-
 		const [row] = await connection<ProjectProps[]>`
 			INSERT INTO projects
-				(name, status, user_id) VALUES (${props.name},${props.status},${props.userId})
+				${sql(convertToCase(camelToSnake, props))}
 			RETURNING *;
 		`;
 
 		await connection.release()
 
-		return new Project(sql, props as ProjectProps)
+		return new Project(sql, convertToCase(snakeToCamel, row) as ProjectProps)
 	}
 
 	static async read(sql: postgres.Sql<any>, id: number): Promise<Project> {
@@ -80,7 +72,7 @@ export default class Project {
 
 		const user = await sql
 		`
-		SELECT name, status, user_id FROM projects WHERE id=${id};
+		SELECT name, status, user_id, url FROM projects WHERE id=${id};
 		`
 		
 		if (!user)
@@ -91,7 +83,8 @@ export default class Project {
 		let props: ProjectProps = {
 			name: user[0].name, 
 			status: user[0].status,
-			userId: user[0].user_id
+			userId: user[0].user_id,
+			url: user[0].url
 		}
 		await connection.release();
 
@@ -114,9 +107,38 @@ export default class Project {
 			(row) =>
 				new Project(sql, convertToCase(snakeToCamel, row) as ProjectProps),
 		);
-
-        //return projects;
 	}
+
+	static async getImageColors(imageUrl: string){
+        const raw = JSON.stringify({
+            "user_app_id": {
+                "user_id": USER_ID,
+                "app_id": APP_ID
+            },
+            "inputs": [
+                {
+                    "data": {
+                        "image": {
+                            "url": imageUrl
+                        }
+                    }
+                }
+            ]
+        });
+
+        const requestOptions = {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': 'Key ' + PAT
+            },
+            body: raw
+        };
+
+        const response = await fetch("https://api.clarifai.com/v2/models/" + MODEL_ID + "/versions/" + MODEL_VERSION_ID + "/outputs", requestOptions);
+        const jsonObject = await response.json();
+        return jsonObject.outputs[0].data.colors;
+    }
 
 
 	// async update(updateProps: Partial<ProjectProps>) {

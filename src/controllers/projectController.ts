@@ -8,6 +8,7 @@ import SessionManager from "../auth/SessionManager";
 import Cookie from "../auth/Cookie";
 import View from "../views/View";
 import Project, { ProjectProps } from "../models/project";
+import { BASE_PATH } from "../url";
 
 /**
  * Controller for handling Todo CRUD operations.
@@ -28,7 +29,6 @@ export default class ProjectController {
 		router.get("/projects/new", this.getCreateProjectView);
 
 		// Any routes that include an `:id` parameter should be registered last.
-		router.get("/projects/:id/edit", this.getEditProjectForm);
 		router.get("/projects/:id", this.getProject);
 		router.put("/projects/:id", this.updateProject);
 		router.delete("/projects/:id", this.deleteProject);
@@ -41,6 +41,15 @@ export default class ProjectController {
 
 		try{
 			projects = await Project.readAll(this.sql);
+			let propsList = projects.map((x) => x.props);
+
+			await res.send({
+				statusCode: StatusCode.OK,
+				message: "All Projects",
+				template: "ListProjectsView",
+				payload: { title: "See all the projects!" , projects: propsList, basePath: BASE_PATH + "/"},
+			});
+			return;
 		}
 		catch (error) {
 			await res.send({
@@ -50,13 +59,6 @@ export default class ProjectController {
 				payload: {error: "Something went while getting the projects: "+error}
 			})
 		}
-		await res.send({
-			statusCode: StatusCode.OK,
-			message: "All Projects",
-			template: "ListProjectsView",
-			payload: { title: "See all the projects!" , projects},
-		});
-		return;
 	};
 
 	
@@ -71,24 +73,33 @@ export default class ProjectController {
 			console.error(message);
 		}
 
-		await res.send({
-			statusCode: StatusCode.OK,
-			message: "Project retrieved",
-			template: "ProjectView",
-			payload: {
-			    id : project?.props.id,
-				name: project?.props.name,
-				status: project?.props.status,
-			},
-		});
-		return
+		let colors;
+		if(project?.props.url){
+			colors = await Project.getImageColors(project.props.url);
+			for(let i = 0; i < colors.length; i++){
+				colors[i].value = Number(colors[i].value).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:2}); 
+			}
+
+			await res.send({
+				statusCode: StatusCode.OK,
+				message: "Project retrieved",
+				template: "ProjectView",
+				payload: {
+					name: project?.props.name,
+					status: project?.props.status,
+					url: project?.props.url,
+					colors: colors
+				},
+			});
+			return
+		}
 	};
 
 	getCreateProjectView = async (req: Request, res: Response) => {
 		await res.send({
 			statusCode: StatusCode.OK,
-			message: "New todo form",
-			template: "NewProjectView",
+			message: "New project form",
+			template: "NewProjectFormView",
 			payload: { title: "New Project" },
 		});
 	};
@@ -97,20 +108,14 @@ export default class ProjectController {
 		const session = req.session; 
         const userId = session.get("userId");
 
-		if (!userId) {
-			await res.send({
-				statusCode: StatusCode.BadRequest,
-				message: "Your not login",
-				redirect: `/login`,
-			});
-        }
 		let project: Project | null = null;
 
 		// This will be broken until you implement users since it now requires a user ID.
 		let projectProps: ProjectProps = {
 			name: req.body.name,
-			status: req.body.status,
-			userId: req.body.userId
+			status: "incomplete",
+			userId: 1,
+			url: req.body.url
 		};
 
 		try {
@@ -121,28 +126,9 @@ export default class ProjectController {
 
 		await res.send({
 			statusCode: StatusCode.Created,
-			message: "Todo created successfully!",
+			message: "Project created successfully!",
 			payload: { project: project?.props },
-			redirect: `/project/${project?.props.id}`,
-		});
-	};
-
-	getEditProjectForm = async (req: Request, res: Response) => {
-		const id = req.getId();
-		let project: Project | null = null;
-
-		try {
-			project = await Project.read(this.sql, id);
-		} catch (error) {
-			const message = `Error while getting project list: ${error}`;
-			console.error(message);
-		}
-
-		await res.send({
-			statusCode: StatusCode.OK,
-			message: "Edit project form",
-			template: "EditProjectView",
-			payload: { project: project?.props, title: "Edit Project" },
+			redirect: `/projects/${project?.props.id}`,
 		});
 	};
 	

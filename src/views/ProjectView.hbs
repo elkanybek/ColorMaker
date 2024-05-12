@@ -1,5 +1,18 @@
 {{> Header }}
 
-<p>the project itself</p>
+<h1 id="name">{{ name }}</h1>
+<img src="{{ url }}">
+
+<h2>Colors:</h2>
+<ol id="colors">
+	{{#each colors}}
+		<li>
+			<p>Color: {{ this.w3c.name }} </p>
+            <p style="display: inline;">Percentage: {{ this.value }}</p>
+            <span class="dot" style="background-color:{{ this.raw_hex }};"></span>
+		</li>
+        <br>
+	{{/each}}
+</ol>
 
 {{> Footer}}

@@ -72,7 +72,6 @@ export default class PostController {
     }
 
     createUser = async (req: Request, res: Response) => {
-
         if(req.body.username == "" || req.body.username == null){
 			await res.send({
 				statusCode: StatusCode.BadRequest,
@@ -96,7 +95,7 @@ export default class PostController {
 		}
 		else{
 			let userprops: UserProps = {
-				username: req.body.email,
+				username: req.body.username,
 				password: req.body.password
 			}
 
@@ -185,8 +184,8 @@ export default class PostController {
 			
 			try{
 				let myUser = await User.login(this.sql, userprops.username,userprops.password)
-                const userId: Cookie = new Cookie("user_id", `${myUser.props.id}`)
-                res.setCookie(userId)
+                // const userId: Cookie = new Cookie("user_id", `${myUser.props.id}`)
+                // res.setCookie(userId)
 			}catch (error){
 				//if the user has entered an email and password the only error left is the duplicate one!
 				await res.send({

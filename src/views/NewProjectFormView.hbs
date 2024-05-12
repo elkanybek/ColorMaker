@@ -1,15 +1,16 @@
 {{> Header }}
 
-<h1>New Project</h1>
-
-<form method="POST" action="{{ path 'projects' }}" id="new-project-form">
-	<fieldset class="grid">
-		<label>
-			Name
-			<input type="text" name="name">
-		</label>
-	</fieldset>
-	<input type="submit" value="Create" id="new-project-form-submit-button">
-</form>
+<div class="form-container">
+        <h1>New Project </h1>
+        <form method="POST" action="{{ path 'projects' }}" id="new-project-form">
+            <label for="name">Project name:</label>
+            <input type="text" id="name" name="name" required>
+			<br>
+			<label for="url">Image url:</label>
+			<input type="text" id="url" name="url">
+			<br>
+            <button id="sign" type="submit">Submit</button>
+        </form>
+</div>
 
 {{> Footer}}

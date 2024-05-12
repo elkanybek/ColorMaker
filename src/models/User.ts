@@ -30,16 +30,16 @@ export default class User {
 
 		const nowTime = new Date()
 
-		const check = await connection<UserProps[]>`
-			SELECT username FROM users Where username = ${props.username};
+		const [check] = await connection<UserProps[]>`
+			SELECT * FROM users WHERE username = ${props.username};
 		`;
-		if(check.count != 0){
+		if(check){
 			throw new DuplicateNameError()
 		}
 
 		const [row] = await connection<UserProps[]>`
 			INSERT INTO users
-				(name, password) VALUES (${props.name},${props.password})
+				(username, password) VALUES (${props.username},${props.password})
 			RETURNING *;
 		`;
 
@@ -73,7 +73,7 @@ export default class User {
 	): Promise<User> {
 
 		const check = await sql `
-			SELECT name, password, userId FROM users WHERE name=${username} AND password=${password};
+			SELECT username, password, id FROM users WHERE username=${username} AND password=${password};
 		`;
 		
 		if(check.count == 1){

@@ -1,5 +1,21 @@
 {{> Header }}
 
-<p>the project itself</p>
+<h1>All Projects</h1>
+
+{{#unless projects}}
+	<p>No projects found</p>
+{{else}}
+	<ol id="projects">
+		{{#each projects}}
+			<li class="project-list-item">
+				<a href="/projects/{{ this.id }}">{{ this.name }}</a>
+			</li>
+		{{/each}}
+	</ol>
+{{/unless}}
+
+<a href="{{ path 'projects/new'}}">
+	<button id="new-project-btn">New</button>
+</a>
 
 {{> Footer}}
