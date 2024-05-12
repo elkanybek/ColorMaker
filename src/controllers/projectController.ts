@@ -24,8 +24,14 @@ export default class ProjectController {
 	
 	registerRoutes(router: Router) {
 		router.get("/projects", this.getProjectList);
+<<<<<<< HEAD
 		router.get("/projects/new", this.getNewProjectForm);
 		router.post("/projects", this.createProject);
+=======
+		router.post("/projects", this.createProject);
+		router.get("/projects/new", this.getCreateProjectView);
+
+>>>>>>> eed1811 (getting very bad error sos)
 
 		// Any routes that include an `:id` parameter should be registered last.
 		router.get("/projects/:id/edit", this.getEditProjectForm);
@@ -33,6 +39,7 @@ export default class ProjectController {
 		router.put("/projects/:id", this.updateProject);
 		router.delete("/projects/:id", this.deleteProject);
 		router.put("/projects/:id/complete", this.completeProject);
+<<<<<<< HEAD
 	}
 
 	getNewProjectForm = async (req: Request, res: Response) => {
@@ -186,12 +193,50 @@ export default class ProjectController {
 			
 		} catch (error) {
 			const message = `Error while getting project: ${error}`;
+=======
+
+	}
+
+	getProjectList = async (req: Request, res: Response) => {
+		let projects: Project[] = []
+
+		try{
+			projects = await Project.readAll(this.sql);
+		}
+		catch (error) {
+			await res.send({
+				statusCode: StatusCode.BadRequest, 
+				message: "Something went wrong", 
+				template: "ErrorView", 
+				payload: {error: "Something went while getting the projects: "+error}
+			})
+		}
+		await res.send({
+			statusCode: StatusCode.OK,
+			message: "All Groups",
+			template: "ProjectListView",
+			payload: { title: "See all the projects!" , projects},
+		});
+		return;
+	};
+
+	
+	getProject = async (req: Request, res: Response) => {
+		const id = req.getId();
+		let project: Project | null = null;
+
+		try {
+			project = await Project.read(this.sql, id);
+		} catch (error) {
+			const message = `Error while getting the project: ${error}`;
+>>>>>>> eed1811 (getting very bad error sos)
 			console.error(message);
 		}
 
 		await res.send({
 			statusCode: StatusCode.OK,
 			message: "Project retrieved",
+<<<<<<< HEAD
 			template: "ShowProjectView",
 			payload: {
 				project: project?.props,
@@ -249,21 +294,105 @@ export default class ProjectController {
 		} catch (error) {
 			console.error("Error while creating project:", error);
 		}
+=======
+			template: "ProjectView",
+			payload: {
+			    id : project?.props.id,
+				name: project?.props.name,
+				status: project?.props.status,
+			},
+		});
+		return
+	};
+
+	getCreateProjectView = async (req: Request, res: Response) => {
+		await res.send({
+			statusCode: StatusCode.OK,
+			message: "New todo form",
+			template: "NewProjectView",
+			payload: { title: "New Project" },
+		});
+	};
+
+	createProject = async (req: Request, res: Response) => {
+		const session = req.session; 
+        const userId = session.get("userId");
+
+		if (!userId) {
+			await res.send({
+				statusCode: StatusCode.BadRequest,
+				message: "Your not login",
+				redirect: `/login`,
+			});
+        }
+		let project: Project | null = null;
+
+		// This will be broken until you implement users since it now requires a user ID.
+		let projectProps: ProjectProps = {
+			name: req.body.name,
+			status: req.body.status,
+			userId: req.body.userId
+		};
+
+		try {
+			project = await Project.create(this.sql, projectProps);
+		} catch (error) {
+			console.error("Error while creating todo:", error);
+		}
+
+		await res.send({
+			statusCode: StatusCode.Created,
+			message: "Todo created successfully!",
+			payload: { project: project?.props },
+			redirect: `/project/${project?.props.id}`,
+		});
+	};
+
+	getEditProjectForm = async (req: Request, res: Response) => {
+		const id = req.getId();
+		let project: Project | null = null;
+
+		try {
+			project = await Project.read(this.sql, id);
+		} catch (error) {
+			const message = `Error while getting project list: ${error}`;
+			console.error(message);
+		}
+
+		await res.send({
+			statusCode: StatusCode.OK,
+			message: "Edit project form",
+			template: "EditProjectView",
+			payload: { project: project?.props, title: "Edit Project" },
+		});
+>>>>>>> eed1811 (getting very bad error sos)
 	};
 	
 	
 	updateProject = async (req: Request, res: Response) => {
 		const id = req.getId();
+<<<<<<< HEAD
 		const userId = req.body.userId || 0;
 
 		const projectProps: Partial<ProjectProps> = {};
 
 		if (req.body.name) {
 			projectProps.name = req.body.name;
+=======
+		const projectprop: Partial<ProjectProps> = {};
+
+		if (req.body.name) {
+			projectprop.name = req.body.name;
+		}
+
+		if (req.body.status) {
+			projectprop.status = req.body.status;
+>>>>>>> eed1811 (getting very bad error sos)
 		}
 
 		let project: Project | null = null;
 
+<<<<<<< HEAD
 		if(isNaN(id)){
 			return await res.send({
 				statusCode: StatusCode.BadRequest,
@@ -302,12 +431,20 @@ export default class ProjectController {
 					template: "ErrorView",
 				});
 			}
+=======
+		try {
+			project = await Project.read(this.sql, id);
+>>>>>>> eed1811 (getting very bad error sos)
 		} catch (error) {
 			console.error("Error while updating project:", error);
 		}
 
 		try {
+<<<<<<< HEAD
 			await project?.update(projectProps);
+=======
+			await project?.update(projectprop);
+>>>>>>> eed1811 (getting very bad error sos)
 		} catch (error) {
 			console.error("Error while updating project:", error);
 		}
@@ -315,16 +452,21 @@ export default class ProjectController {
 		await res.send({
 			statusCode: StatusCode.OK,
 			message: "Project updated successfully!",
+<<<<<<< HEAD
 			payload: { 
 				project: project?.props,
 				isSession,
 			},
+=======
+			payload: { project: project?.props },
+>>>>>>> eed1811 (getting very bad error sos)
 			redirect: `/projects/${id}`,
 		});
 	};
 
 	deleteProject = async (req: Request, res: Response) => {
 		const id = req.getId();
+<<<<<<< HEAD
 		const userId = req.body.userId || 0;
 
 		let project: Project | null = null;
@@ -367,6 +509,12 @@ export default class ProjectController {
 					template: "ErrorView",
 				});
 			}
+=======
+		let project: Project | null = null;
+
+		try {
+			project = await Project.read(this.sql, id);
+>>>>>>> eed1811 (getting very bad error sos)
 		} catch (error) {
 			console.error("Error while deleting project:", error);
 		}
@@ -380,16 +528,22 @@ export default class ProjectController {
 		await res.send({
 			statusCode: StatusCode.OK,
 			message: "Project deleted successfully!",
+<<<<<<< HEAD
 			payload: { 
 				project: project?.props, 
 				isSession, 
 			},
 			redirect: "/projects",
+=======
+			payload: { project: project?.props },
+			redirect: "/project",
+>>>>>>> eed1811 (getting very bad error sos)
 		});
 	};
 
 	completeProject = async (req: Request, res: Response) => {
 		const id = req.getId();
+<<<<<<< HEAD
 		const userId = req.body.userId || 0;
 
 		let project: Project | null = null;
@@ -435,5 +589,27 @@ export default class ProjectController {
 					template: "ErrorView",
 				});
 			}
+=======
+		let project: Project | null = null;
+
+		try {
+			project = await Project.read(this.sql, id);
+		} catch (error) {
+			console.error("Error while marking project as complete:", error);
+		}
+
+		try {
+			//await project?.markComplete();
+		} catch (error) {
+			console.error("Error while marking project as complete:", error);
+		}
+
+		await res.send({
+			statusCode: StatusCode.OK,
+			message: "Todo marked as complete!",
+			payload: { project: project?.props },
+			redirect: `/project/${id}`,
+		});
+>>>>>>> eed1811 (getting very bad error sos)
 	};
 }

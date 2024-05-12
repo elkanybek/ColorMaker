@@ -1,0 +1,163 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    background: linear-gradient(180deg, rgba(248,248,248,1) 0%, rgba(102,114,136,1) 84%, rgba(35,25,60,1) 100%);
+}
+
+.Header {
+    display: flex; /* Use flexbox for layout /
+    align-items: center; / Center items vertically /
+    padding: 10px; / Add some padding for spacing /
+    background-color: #f0f0f0; / Set background color /
+} 
+
+.Header img {
+    max-width: 80px;
+}
+#Logo{
+    margin-right: 100px;
+    margin-left: 30px;
+}
+
+button {
+    padding: 10px 20px; / Add padding inside the buttons /
+    margin-right: 10px; / Add margin to separate buttons /
+    font-size: 16px; / Set font size /
+    color: grey; / Set text color /
+    border: none; / Remove border /
+    border-radius: 5px; / Add border radius for rounded corners /
+    cursor: pointer; / Set cursor to pointer on hover /
+}
+
+button:hover {
+    background-color: darkgray; / Change background color on hover /
+}
+.image-container {
+    white-space: nowrap; / Prevent images from wrapping to a new line /
+    overflow: hidden; / Hide overflowing images /
+}
+
+.image-container img {
+    display: inline-block; / Display images in a row /
+    animation: slide 3s linear infinite; / Apply the slide animation /
+    margin-right: 20px; / Add spacing between images /
+}
+
+@keyframes slide {
+    0% {
+        transform: translateX(0); / Start position /
+    }
+    100% {
+        transform: translateX(-100%); / End position (move images to the left) /
+    }
+}
+.image-container img{
+    margin-top: 50px;
+    display: inline-block;
+    animation: slide 10s linear infinite;
+    height: 200px;
+    width: 400px;
+    border-radius: 10px; / Add rounded corners */
+
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    background: rgb(2,0,36);
+    background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%);
+}
+
+.Header {
+    display: flex; /* Use flexbox for layout /
+    align-items: center; / Center items vertically /
+    padding: 10px; / Add some padding for spacing /
+    background-color: #f0f0f0; / Set background color /
+} 
+button {
+    padding: 10px 20px; / Add padding inside the buttons /
+    margin-right: 10px; / Add margin to separate buttons /
+    font-size: 16px; / Set font size /
+    color: grey; / Set text color /
+    border: none; / Remove border /
+    border-radius: 5px; / Add border radius for rounded corners /
+    cursor: pointer; / Set cursor to pointer on hover /
+}
+
+button:hover {
+    background-color: darkgray; / Change background color on hover */
+}
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+}
+
+.form-container {
+
+    width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(74, 90, 191, 0.1);
+}
+
+h1 {
+    text-align: center;
+}
+#logo{
+    margin-top: 30px;
+    margin-bottom: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+
+}
+
+label {
+    margin-top: 10px;
+}
+
+input {
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+button {
+    padding: 10px;
+    margin-top: 10px;
+    background-color: #08196d;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #142dab;
+}
+.Header img {
+    max-width: 80px;
+}
+#logo {
+    margin-right: 100px;
+    margin-left: 30px;
+}
+#sign{
+    margin-bottom: 20px;
+
+}
+a {
+    color: #08196d;
+    text-decoration: none;
+}
+a:hover{
+    color: #2443df;
+
+}

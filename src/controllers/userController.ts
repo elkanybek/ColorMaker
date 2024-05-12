@@ -32,6 +32,7 @@ export default class PostController {
 		router.get("/register", this.getRegister);
         router.post("/login", this.loginUser);
 		router.get("/login", this.getLogin);
+		
 	}
 
     getRegister = async (req: Request, res: Response) => {

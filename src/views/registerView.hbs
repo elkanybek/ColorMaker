@@ -6,25 +6,20 @@
 	
 	<div id="error" style="color: black;">{{errorMessage}}</div>
 
-	<fieldset class="grid">
-		<label>
-			Name
-			<input type="text" name="name">
-		</label>
-	</fieldset>
-    <fieldset class="grid">
-		<label>
-			Password
-			<input type="text" name="password">
-		</label>
-	</fieldset>
-    <fieldset class="grid">
-		<label>
-			Password
-			<input type="text" name="confirmPassword">
-		</label>
-	</fieldset>
-	<input type="submit" value="register" id="register-form-submit-button">
+	<div class="form-container">
+        <h1>Chroma Blend </h1>
+        
+        <form action="#" method="post">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <label for="confirm-password">Confirm Password:</label>
+            <input type="password" id="confirm-password" name="confirm-password" required>
+            <button id="sign" type="submit">Signup</button>
+            <p>Already have an account? <a href="login.html">Login here</a></p>
+        </form>
+    </div>
 </form>
 
 {{> Footer}}

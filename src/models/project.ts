@@ -27,32 +27,56 @@ export class NotFoundError extends Error {
     }
 }
 
+export class DuplicateNameError extends Error {
+	constructor() {
+		super("User with this name already exists.");
+	}
+}
+
+export class InvalidCredentialsError extends Error {
+	constructor() {
+		super("Invalid credentials.");
+	}
+}
+
+export class NotFound extends Error {
+	constructor() {
+		super("Not Found.");
+	}
+}
+
 export default class Project {
 	constructor(
 		private sql: postgres.Sql<any>,
 		public props: ProjectProps,
-	) {}
+	) {this.sql = sql}
 
 	static async create(sql: postgres.Sql<any>, props: ProjectProps) {
-		const connection = await sql.reserve();
+		// getting the connection
+		const connection = await sql.reserve();	
 
-		props.name = props.name;
-		props.userId = props.userId
+		const nowTime = createUTCDate(); //new Date()
 
-		console.log(sql(convertToCase(camelToSnake, props)));
+		const check = await connection<ProjectProps[]>`
+			SELECT name FROM projects WHERE name = ${props.name};
+		`;
+		if(check.count != 0){
+			throw new DuplicateNameError()
+		}
 
 		const [row] = await connection<ProjectProps[]>`
 			INSERT INTO projects
-				${sql(convertToCase(camelToSnake, props))}
-			RETURNING *
+				(name, status, user_id) VALUES (${props.name},${props.status},${props.userId})
+			RETURNING *;
 		`;
 
-		await connection.release();
+		await connection.release()
 
-		return new Project(sql, convertToCase(snakeToCamel, row) as ProjectProps);
+		return new Project(sql, props as ProjectProps)
 	}
 
 	static async read(sql: postgres.Sql<any>, id: number): Promise<Project> {
+<<<<<<< HEAD
         const project = await sql 
         `
         SELECT * FROM projects WHERE id=${id};
@@ -71,19 +95,38 @@ export default class Project {
 
         return new Project(sql, project_props as ProjectProps);
     }
+=======
+		const connection = await sql.reserve();	
+
+		const user = await sql
+		`
+		SELECT name, status, user_id FROM projects WHERE id=${id};
+		`
+		
+		if (!user)
+		{
+			throw new NotFound();//error no user found
+		}
+		
+		let props: ProjectProps = {
+			name: user[0].name, 
+			status: user[0].status,
+			userId: user[0].user_id
+		}
+		await connection.release();
+
+		return new Project(sql, props as ProjectProps);
+	}
+>>>>>>> eed1811 (getting very bad error sos)
 
 	static async readAll(
-		sql: postgres.Sql<any>,
-		userId: number,
-		filters?: Partial<ProjectProps>,
-		sortBy?: string,
-		orderBy?: string,
+		sql: postgres.Sql<any>
 	): Promise<Project[]> {
 		const connection = await sql.reserve();
 
 		const rows = await connection<ProjectProps[]>`
 			SELECT *
-			FROM projects
+			FROM projects;
 		`;
 
 		await connection.release();
@@ -92,24 +135,40 @@ export default class Project {
 			(row) =>
 				new Project(sql, convertToCase(snakeToCamel, row) as ProjectProps),
 		);
+
+        //return projects;
 	}
+
+
+	// async update(updateProps: Partial<ProjectProps>) {
+	// 	 //WE CANT UPDATE THE ID (those field never change).
+
+	// 	//check if user wants to update the title
+	// 	if (updateProps.name != undefined) {
+	// 		let updatedPro = await this.sql `Update projects Set name = ${updateProps.name} where id = ${this.props.id} returning name`
+	// 		//make sure that the user exist and there is not mistake with the id
+	// 		if (updatedPro[0].name != undefined){
+	// 			this.props.name = updatedPro[0].name;
+	// 		}
+	// 	}
+	// }
 
 	async update(updateProps: Partial<ProjectProps>) {
-		const connection = await this.sql.reserve();
+        const connection = await this.sql.reserve();
 
-		const [row] = await connection`
-			UPDATE projects
-			SET
-				${this.sql(convertToCase(camelToSnake, updateProps))}
-			WHERE
-				id = ${this.props.id}
-			RETURNING *
+        const [row] = await connection`
+		UPDATE projects
+            SET
+                ${this.sql(convertToCase(camelToSnake, updateProps))}
+            WHERE
+                id = ${this.props.id}
+            RETURNING *
 		`;
 
-		await connection.release();
+        await connection.release();
 
-		this.props = { ...this.props, ...convertToCase(snakeToCamel, row) };
-	}
+        this.props = { ...this.props, ...convertToCase(snakeToCamel, row) };
+    }
 
 	async delete() {
 		const connection = await this.sql.reserve();
@@ -123,6 +182,7 @@ export default class Project {
 
 		return result.count === 1;
 	}
+<<<<<<< HEAD
 
 	async markComplete() {
 		await this.update({
@@ -161,3 +221,6 @@ export default class Project {
         return jsonObject.outputs[0].data.colors;
     }
 }
+=======
+}
+>>>>>>> eed1811 (getting very bad error sos)
