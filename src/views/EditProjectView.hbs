@@ -10,8 +10,7 @@
 			<input type="text" name="name" placeholder="Enter new name" id="name" value="{{project.name}}">
 		</label>
 	</fieldset>
-	<textarea name="description" placeholder="Enter Description" id="description">{{todo.description}}</textarea>
-	<input type="submit" value="Edit" id="edit-todo-form-submit-button">
+	<input type="submit" value="Edit" id="edit-project-form-submit-button">
 </form>
 
 <form id="complete-project-form" method="POST" action="/projects/{{ project.id }}/complete">
