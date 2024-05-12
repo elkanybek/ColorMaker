@@ -1,25 +1,20 @@
 {{> Header }}
 
-<h1>Login</h1>
+<div class="form-container">
+	<h1>Login</h1>
+	<div id="logo"> <img src="image copy.png" alt=""></div>
+	<form method="POST" action="{{ path 'login' }}" id="login-form">
 
-<form method="POST" action="{{ path 'login' }}" id="login-form">
-	
-	<div id="error" style="color: black;">{{errorMessage}}</div>
+		<div id="error" style="color: black;">{{errorMessage}}</div>
 
-	<fieldset class="grid">
-		<label>
-			Name
-			<input type="text" name="name">
-		</label>
-	</fieldset>
-    <fieldset class="grid">
-		<label>
-			Password
-			<input type="text" name="password">
-		</label>
-	</fieldset>
-    
-	<input type="submit" value="Login" id="login-form-submit-button">
-</form>
+		<label for="username">Username:</label>
+		<input type="text" id="username" name="username" required>
+		<label for="password">Password:</label>
+		<input type="password" id="password" name="password" required>
+		<br>
+
+		<button id="sign" type="submit">Log in</button>
+	</form>
+</div>
 
 {{> Footer}}
