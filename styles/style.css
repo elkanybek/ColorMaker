@@ -1,14 +1,22 @@
+/* CSS styling for the buttons */
+/* Apply linear gradient background to the whole page */
 html, body {
     height: 100%;
     margin: 0;
-    background: linear-gradient(180deg, rgba(248,248,248,1) 0%, rgba(102,114,136,1) 84%, rgba(35,25,60,1) 100%);
+    background: rgb(2,0,36);
+    background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%);
+}
+
+* {
+    margin: 0;
+
 }
 
 .Header {
-    display: flex; /* Use flexbox for layout /
-    align-items: center; / Center items vertically /
-    padding: 10px; / Add some padding for spacing /
-    background-color: #f0f0f0; / Set background color /
+    display: flex; /* Use flexbox for layout */
+    align-items: center; /* Center items vertically */
+    padding: 10px; /* Add some padding for spacing */
+    background-color: #f0f0f0; /* Set background color */
 } 
 
 .Header img {
@@ -94,8 +102,18 @@ body {
     background-color: #f0f0f0;
 }
 
-.form-container {
+.image-container {
+    white-space: nowrap; /* Prevent images from wrapping to a new line */
+    overflow: hidden; /* Hide overflowing images */
+}
 
+.image-container img {
+    display: inline-block; /* Display images in a row */
+    animation: slide 3s linear infinite; /* Apply the slide animation */
+    margin-right: 20px; /* Add spacing between images */
+}
+
+.form-container {
     width: 400px;
     margin: 50px auto;
     padding: 20px;
@@ -107,6 +125,7 @@ body {
 h1 {
     text-align: center;
 }
+
 #logo{
     margin-top: 30px;
     margin-bottom: 20px;
@@ -115,7 +134,6 @@ h1 {
 form {
     display: flex;
     flex-direction: column;
-
 }
 
 label {
@@ -129,35 +147,46 @@ input {
     border-radius: 3px;
 }
 
-button {
-    padding: 10px;
-    margin-top: 10px;
-    background-color: #08196d;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
+@keyframes slide {
+    0% {
+        transform: translateX(0); /* Start position */
+    }
+    100% {
+        transform: translateX(-100%); /* End position (move images to the left) */
+    }
 }
 
-button:hover {
-    background-color: #142dab;
-}
 .Header img {
     max-width: 80px;
 }
-#logo {
+
+.image-container img{
+    margin-top: 50px;
+    display: inline-block;
+    animation: slide 10s linear infinite;
+    height: 200px;
+    width: 400px;
+    border-radius: 10px; /* Add rounded corners */
+}
+
+.logo {
     margin-right: 100px;
     margin-left: 30px;
+    width: 80px; /* Set the width to 80px */
+    max-height: 80px; /* Set the maximum height to 80px */
+    margin-top: 30px;
+    margin-bottom: 20px;
 }
+
 #sign{
     margin-bottom: 20px;
-
 }
+
 a {
     color: #08196d;
     text-decoration: none;
 }
+
 a:hover{
     color: #2443df;
-
 }

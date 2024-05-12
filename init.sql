@@ -9,7 +9,7 @@ CREATE TYPE project_status AS ENUM ('incomplete', 'complete');
 DROP TABLE IF EXISTS users;
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL,
+    username VARCHAR(50) NOT NULL,
     password VARCHAR(100) NOT NULL
 );
 
