@@ -24,8 +24,8 @@ export default class ProjectController {
 	
 	registerRoutes(router: Router) {
 		router.get("/projects", this.getProjectList);
-		router.get("/projects/new", this.getNewProjectForm);
 		router.post("/projects", this.createProject);
+		router.get("/projects/new", this.getCreateProjectView);
 
 		// Any routes that include an `:id` parameter should be registered last.
 		router.get("/projects/:id/edit", this.getEditProjectForm);
@@ -33,48 +33,104 @@ export default class ProjectController {
 		router.put("/projects/:id", this.updateProject);
 		router.delete("/projects/:id", this.deleteProject);
 		router.put("/projects/:id/complete", this.completeProject);
+
 	}
 
-	getNewProjectForm = async (req: Request, res: Response) => {
-		const isSession = req.getSession().cookie.name == 'session_id' && 
-			req.getSession().cookie.value &&
-			req.getSession().data.userId;
+	getProjectList = async (req: Request, res: Response) => {
+		let projects: Project[] = []
 
-		if (!isSession) {
-			return await res.send({
-				statusCode: StatusCode.Unauthorized,
-				message: "Unauthorized",
-				redirect: `/login`,
-			});
-		} 
+		try{
+			projects = await Project.readAll(this.sql);
+		}
+		catch (error) {
+			await res.send({
+				statusCode: StatusCode.BadRequest, 
+				message: "Something went wrong", 
+				template: "ErrorView", 
+				payload: {error: "Something went while getting the projects: "+error}
+			})
+		}
 		await res.send({
 			statusCode: StatusCode.OK,
-			message: "New project todo form",
-			template: "NewProjectFormView",
-			payload: { 
-				title: "New Project",
-				isSession,
+			message: "All Projects",
+			template: "ListProjectsView",
+			payload: { title: "See all the projects!" , projects},
+		});
+		return;
+	};
+
+	
+	getProject = async (req: Request, res: Response) => {
+		const id = req.getId();
+		let project: Project | null = null;
+
+		try {
+			project = await Project.read(this.sql, id);
+		} catch (error) {
+			const message = `Error while getting the project: ${error}`;
+			console.error(message);
+		}
+
+		await res.send({
+			statusCode: StatusCode.OK,
+			message: "Project retrieved",
+			template: "ProjectView",
+			payload: {
+			    id : project?.props.id,
+				name: project?.props.name,
+				status: project?.props.status,
 			},
+		});
+		return
+	};
+
+	getCreateProjectView = async (req: Request, res: Response) => {
+		await res.send({
+			statusCode: StatusCode.OK,
+			message: "New todo form",
+			template: "NewProjectView",
+			payload: { title: "New Project" },
+		});
+	};
+
+	createProject = async (req: Request, res: Response) => {
+		const session = req.session; 
+        const userId = session.get("userId");
+
+		if (!userId) {
+			await res.send({
+				statusCode: StatusCode.BadRequest,
+				message: "Your not login",
+				redirect: `/login`,
+			});
+        }
+		let project: Project | null = null;
+
+		// This will be broken until you implement users since it now requires a user ID.
+		let projectProps: ProjectProps = {
+			name: req.body.name,
+			status: req.body.status,
+			userId: req.body.userId
+		};
+
+		try {
+			project = await Project.create(this.sql, projectProps);
+		} catch (error) {
+			console.error("Error while creating todo:", error);
+		}
+
+		await res.send({
+			statusCode: StatusCode.Created,
+			message: "Todo created successfully!",
+			payload: { project: project?.props },
+			redirect: `/project/${project?.props.id}`,
 		});
 	};
 
 	getEditProjectForm = async (req: Request, res: Response) => {
 		const id = req.getId();
-		const userId = req.body.userId || 0;
-
 		let project: Project | null = null;
-		const isSession = req.getSession().cookie.name == 'session_id' && 
-			req.getSession().cookie.value &&
-			req.getSession().data.userId;
 
-		if (!isSession) {
-			return await res.send({
-				statusCode: StatusCode.Unauthorized,
-				message: "Unauthorized",
-				redirect: `/login`,
-			});
-		} 
-		
 		try {
 			project = await Project.read(this.sql, id);
 		} catch (error) {
@@ -85,229 +141,34 @@ export default class ProjectController {
 		await res.send({
 			statusCode: StatusCode.OK,
 			message: "Edit project form",
-			template: "EditFormView",
-			payload: { 
-				project: project?.props, 
-				title: "Edit Project",
-				isSession,
-			},
+			template: "EditProjectView",
+			payload: { project: project?.props, title: "Edit Project" },
 		});
-	};
-
-	getProjectList = async (req: Request, res: Response) => {
-		const id = req.getId();
-		
-		let projects: Project[] = [];
-		let uId = req.session.data.userId;
-		
-		const userId = req.body.userId || 0;
-		const isSession = req.getSession().cookie.name == 'session_id' && 
-			req.getSession().cookie.value;
-
-		try {
-			projects = await Project.readAll(this.sql, userId);
-			if (!isSession || !req.getSession().data.userId) {
-				return await res.send({
-					statusCode: StatusCode.Unauthorized,
-					message: "Unauthorized",
-					redirect: `/login`,
-				});
-			} 	
-		} catch (error) {
-			const message = `Error while getting project list: ${error}`;
-			console.error(message);
-		}
-
-		const projectList = projects.map((project) => {
-			return {
-				...project.props,
-				isComplete: project.props.status === "complete",
-			};
-		});
-		
-		await res.send({
-			statusCode: StatusCode.OK,
-			message: "Project list retrieved",
-			payload: {
-				title: "Project List",
-				projects: projectList,
-				isSession,
-				id: { id: uId},
-			},
-			template: "ListProjectsView",
-		});
-	};
-
-	getProject = async (req: Request, res: Response) => {
-		const id = req.getId();
-
-		let project: Project | null = null;
-
-		if(isNaN(id)){
-			return await res.send({
-				statusCode: StatusCode.BadRequest,
-				message: "Invalid ID",
-			});
-		}
-		const userId = req.body.userId || 0;
-
-		const isSession = req.getSession().cookie.name == 'session_id' && 
-			req.getSession().cookie.value;
-
-
-		try {
-			project = await Project.read(this.sql, id);
-			if(!project){
-				return await res.send({
-					statusCode: StatusCode.NotFound,
-					message: "Not found",
-					payload: {error: "Not Found"},
-					template: "ErrorView",
-				});
-			}
-
-			if (!isSession || !req.getSession().data.userId) {
-				return await res.send({
-					statusCode: StatusCode.Unauthorized,
-					message: "Unauthorized",
-					redirect: `/login`,
-				});
-			}
-
-			if(req.getSession().data.userId != project.props.userId){
-				return await res.send({
-					statusCode: StatusCode.Forbidden,
-					message: "Forbidden",
-					payload: {error: "Forbidden"},
-					template: "ErrorView",
-				});
-			}
-
-			
-		} catch (error) {
-			const message = `Error while getting project: ${error}`;
-			console.error(message);
-		}
-
-		await res.send({
-			statusCode: StatusCode.OK,
-			message: "Project retrieved",
-			template: "ShowProjectView",
-			payload: {
-				project: project?.props,
-				name: project?.props.name,
-				isComplete: project?.props.status === "complete",
-				isSession,
-			},
-		});
-	};
-
-	createProject = async (req: Request, res: Response) => {
-		let project: Project | null = null;
-
-		const isSession = req.getSession().cookie.name == 'session_id' && 
-			req.getSession().cookie.value &&
-			req.getSession().data.userId;
-
-		if (!isSession) {
-			return await res.send({
-				statusCode: StatusCode.Unauthorized,
-				message: "Unauthorized",
-				redirect: `/login`,
-			});
-		} 
-
-		let projectProps: ProjectProps = {
-			name: req.body.name,
-			status: "incomplete",
-			userId: parseInt(req.body.userId),
-		};
-
-		if (!projectProps.name) {
-			return await res.send({
-				statusCode: StatusCode.BadRequest,
-				message: "Request body must include name.",
-				payload: {
-					projectProps,
-					error: "Request body must include name.",
-				},
-				template: "ErrorView"
-			});
-		}
-	
-		try {
-			project = await Project.create(this.sql, projectProps);
-			await res.send({
-				statusCode: StatusCode.Created,
-				message: "Project created successfully!",
-				payload: { 
-					project: project.props,
-					isSession,
-				},
-				redirect: `/projects/${project.props.id}`,
-			});
-		} catch (error) {
-			console.error("Error while creating project:", error);
-		}
 	};
 	
 	
 	updateProject = async (req: Request, res: Response) => {
 		const id = req.getId();
-		const userId = req.body.userId || 0;
-
-		const projectProps: Partial<ProjectProps> = {};
+		const projectprop: Partial<ProjectProps> = {};
 
 		if (req.body.name) {
-			projectProps.name = req.body.name;
+			projectprop.name = req.body.name;
+		}
+
+		if (req.body.status) {
+			projectprop.status = req.body.status;
 		}
 
 		let project: Project | null = null;
 
-		if(isNaN(id)){
-			return await res.send({
-				statusCode: StatusCode.BadRequest,
-				message: "Invalid ID",
-				redirect:`/login`
-			});
-		}
-
-		const isSession = req.getSession().cookie.name == 'session_id' && 
-			req.getSession().cookie.value;
-
 		try {
 			project = await Project.read(this.sql, id);
-			if(!project){
-				return await res.send({
-					statusCode: StatusCode.NotFound,
-					message: "Not found",
-					payload: {error: "Not found",},
-					template: "ErrorView",
-				});
-			}
-
-			if (!isSession || !req.getSession().data.userId) {
-				return await res.send({
-					statusCode: StatusCode.Unauthorized,
-					message: "Unauthorized",
-					redirect: `/login`
-				});
-			}
-			
-			if(req.getSession().data.userId != project.props.userId){
-				return await res.send({
-					statusCode: StatusCode.Forbidden,
-					message: "Forbidden",
-					payload: {error: "Forbidden",},
-					template: "ErrorView",
-				});
-			}
 		} catch (error) {
 			console.error("Error while updating project:", error);
 		}
 
 		try {
-			await project?.update(projectProps);
+			await project?.update(projectprop);
 		} catch (error) {
 			console.error("Error while updating project:", error);
 		}
@@ -315,58 +176,17 @@ export default class ProjectController {
 		await res.send({
 			statusCode: StatusCode.OK,
 			message: "Project updated successfully!",
-			payload: { 
-				project: project?.props,
-				isSession,
-			},
+			payload: { project: project?.props },
 			redirect: `/projects/${id}`,
 		});
 	};
 
 	deleteProject = async (req: Request, res: Response) => {
 		const id = req.getId();
-		const userId = req.body.userId || 0;
-
 		let project: Project | null = null;
-
-		if(isNaN(id)){
-			return await res.send({
-				statusCode: StatusCode.BadRequest,
-				message: "Invalid ID",
-			});
-		}
-
-		const isSession = req.getSession().cookie.name == 'session_id' && 
-			req.getSession().cookie.value;
 
 		try {
 			project = await Project.read(this.sql, id);
-			if(!project){
-				return await res.send({
-					statusCode: StatusCode.NotFound,
-					message: "Not found",
-					payload: {error: "Not found",},
-					template: "ErrorView",
-				});
-			}
-
-			if (!isSession || !req.getSession().data.userId) {
-				return await res.send({
-					statusCode: StatusCode.Unauthorized,
-					message: "Unauthorized",
-					payload: {error: "Unauthorized",},
-					template: "ErrorView",
-				});
-			}
-			
-			if(req.getSession().data.userId != project.props.userId){
-				return await res.send({
-					statusCode: StatusCode.Forbidden,
-					message: "Forbidden",
-					payload: {error: "Forbidden",},
-					template: "ErrorView",
-				});
-			}
 		} catch (error) {
 			console.error("Error while deleting project:", error);
 		}
@@ -380,59 +200,32 @@ export default class ProjectController {
 		await res.send({
 			statusCode: StatusCode.OK,
 			message: "Project deleted successfully!",
-			payload: { 
-				project: project?.props, 
-				isSession, 
-			},
-			redirect: "/projects",
+			payload: { project: project?.props },
+			redirect: "/project",
 		});
 	};
 
 	completeProject = async (req: Request, res: Response) => {
 		const id = req.getId();
-		const userId = req.body.userId || 0;
-
 		let project: Project | null = null;
 
-		if(isNaN(id)){
-			return await res.send({
-				statusCode: StatusCode.BadRequest,
-				message: "Invalid ID",
-				payload: {error: "Invalid ID",},
-				template: "ErrorView",
-			});
+		try {
+			project = await Project.read(this.sql, id);
+		} catch (error) {
+			console.error("Error while marking project as complete:", error);
 		}
 
-		const isSession = req.getSession().cookie.name == 'session_id' && 
-			req.getSession().cookie.value;
-
-		project = await Project.read(this.sql, id);
-
-		if(!project){
-			return await res.send({
-				statusCode: StatusCode.NotFound,
-				message: "Not found",
-				payload: {error: "Not found",},
-				template: "ErrorView",
-			});
+		try {
+			//await project?.markComplete();
+		} catch (error) {
+			console.error("Error while marking project as complete:", error);
 		}
 
-		if (!isSession || !req.getSession().data.userId) {
-			return await res.send({
-				statusCode: StatusCode.Unauthorized,
-				message: "Unauthorized",
-				payload: {error: "Unauthorized",},
-				template: "ErrorView",
-			});
-		}
-		
-		if(req.getSession().data.userId != project.props.userId){
-			return await res.send({
-				statusCode: StatusCode.Forbidden,
-				message: "Forbidden",
-				payload: {error: "Forbidden",},
-				template: "ErrorView",
-			});
-		}
-	}
+		await res.send({
+			statusCode: StatusCode.OK,
+			message: "Todo marked as complete!",
+			payload: { project: project?.props },
+			redirect: `/project/${id}`,
+		});
+	};
 }

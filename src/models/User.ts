@@ -1,11 +1,4 @@
 import postgres from "postgres";
-import {
-	camelToSnake,
-	convertToCase,
-	createUTCDate,
-	snakeToCamel,
-} from "../utils";
-import internal from "stream";
 
 export interface UserProps {
 	id?: number;
@@ -45,8 +38,8 @@ export default class User {
 		}
 
 		const [row] = await connection<UserProps[]>`
-			INSERT INTO user
-				(username, password) VALUES (${props.username},${props.password})
+			INSERT INTO users
+				(name, password) VALUES (${props.name},${props.password})
 			RETURNING *;
 		`;
 

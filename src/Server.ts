@@ -2,7 +2,6 @@ import http, { IncomingMessage, ServerResponse } from "http";
 import Request from "./router/Request";
 import Response, { StatusCode } from "./router/Response";
 import Router from "./router/Router";
-import Controller from "./controllers/Controller";
 import postgres from "postgres";
 import fs from "fs/promises";
 import SessionManager from "./auth/SessionManager";
@@ -33,7 +32,6 @@ export default class Server {
 	private server: http.Server;
 	private sql: postgres.Sql;
 	private router: Router;
-	private controller: Controller;
 	private userController: userController;
 	private projectController: projectController;
 
@@ -48,14 +46,12 @@ export default class Server {
 		this.port = serverOptions.port;
 
 		this.router = new Router();
-		this.controller = new Controller(this.sql);
 		this.userController = new userController(this.sql)
 		this.projectController = new projectController(this.sql)
 
 
 
 
-		this.controller.registerRoutes(this.router);
 		this.userController.registerRoutes(this.router)
 		this.projectController.registerRoutes(this.router)
 

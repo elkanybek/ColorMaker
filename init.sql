@@ -20,3 +20,7 @@ CREATE TABLE projects (
     status project_status NOT NULL DEFAULT 'incomplete',
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE
 );
+
+INSERT INTO projects(name, status) VALUES('tester', 'incomplete');
+INSERT INTO projects(name, status) VALUES('tester2', 'incomplete');
+INSERT INTO projects(name, status) VALUES('tester3', 'incomplete');
