@@ -76,26 +76,6 @@ export default class Project {
 	}
 
 	static async read(sql: postgres.Sql<any>, id: number): Promise<Project> {
-<<<<<<< HEAD
-        const project = await sql 
-        `
-        SELECT * FROM projects WHERE id=${id};
-        `
-
-        if (!project)
-        {
-            throw new NotFoundError()
-        }
-
-        let project_props: ProjectProps = {
-            name: project[0].name, 
-            status: project[0].status,
-            userId: project[0].userId,
-        }
-
-        return new Project(sql, project_props as ProjectProps);
-    }
-=======
 		const connection = await sql.reserve();	
 
 		const user = await sql
@@ -117,7 +97,6 @@ export default class Project {
 
 		return new Project(sql, props as ProjectProps);
 	}
->>>>>>> eed1811 (getting very bad error sos)
 
 	static async readAll(
 		sql: postgres.Sql<any>
@@ -182,45 +161,4 @@ export default class Project {
 
 		return result.count === 1;
 	}
-<<<<<<< HEAD
-
-	async markComplete() {
-		await this.update({
-			status: "complete",
-		});
-	}
-
-	async  getImageColors(imageUrl: StaticRangeInit){
-        const raw = JSON.stringify({
-            "user_app_id": {
-                "user_id": USER_ID,
-                "app_id": APP_ID
-            },
-            "inputs": [
-                {
-                    "data": {
-                        "image": {
-                            "url": imageUrl
-                        }
-                    }
-                }
-            ]
-        });
-
-        const requestOptions = {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': 'Key ' + PAT
-            },
-            body: raw
-        };
-
-        const response = await fetch("https://api.clarifai.com/v2/models/" + MODEL_ID + "/versions/" + MODEL_VERSION_ID + "/outputs", requestOptions);
-        const jsonObject = await response.json();
-        return jsonObject.outputs[0].data.colors;
-    }
 }
-=======
-}
->>>>>>> eed1811 (getting very bad error sos)
